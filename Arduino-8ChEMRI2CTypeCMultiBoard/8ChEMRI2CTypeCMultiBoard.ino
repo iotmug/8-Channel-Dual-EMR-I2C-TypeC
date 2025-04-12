@@ -16,9 +16,9 @@ void setup() {
   configAsOutput(BOARD1_ADDR);
   configAsOutput(BOARD2_ADDR);
 
-  // Turn off all relays initially (HIGH = off if active low)
-  writeRelayState(BOARD1_ADDR, 0xFF);  // All off
-  writeRelayState(BOARD2_ADDR, 0xFF);  // All off
+  // Turn off all relays initially (LOW = off if active HIGH)
+  writeRelayState(BOARD1_ADDR, 0x00);  // All off
+  writeRelayState(BOARD2_ADDR, 0x00);  // All off
 
   delay(1000);
 }
@@ -26,15 +26,20 @@ void setup() {
 void loop() {
   // Turn on relays one by one on both boards
   for (int i = 0; i < 8; i++) {
-    byte state1 = ~(1 << i);  // Active LOW: set only one LOW at a time
+    byte state1 = (1 << i);  // Active HIGH: set only one HIGH at a time
     writeRelayState(BOARD1_ADDR, state1);
     writeRelayState(BOARD2_ADDR, state1);
     delay(500);
   }
 
-  // Turn off all relays
+
+  // Turn ON all relays
   writeRelayState(BOARD1_ADDR, 0xFF);
   writeRelayState(BOARD2_ADDR, 0xFF);
+  delay(1000);
+  // Turn off all relays
+  writeRelayState(BOARD1_ADDR, 0x00);
+  writeRelayState(BOARD2_ADDR, 0x00);
   delay(1000);
 }
 
@@ -52,6 +57,6 @@ void writeRelayState(uint8_t addr, uint8_t state) {
   Wire.beginTransmission(addr);
   Wire.write(OUTPUT_REG);
   Wire.write(state);  // Port 0 (P0_0 to P0_7)
-  Wire.write(0xFF);   // Port 1 (not used)
+  Wire.write(0x00);   // Port 1 (not used)
   Wire.endTransmission();
 }
