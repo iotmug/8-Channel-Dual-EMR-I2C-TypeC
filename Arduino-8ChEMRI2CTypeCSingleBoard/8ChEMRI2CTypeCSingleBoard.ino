@@ -1,7 +1,5 @@
 #include <Wire.h>
-
 #define RELAY_BOARD_ADDR 0x20  // Change this if your board uses a different address
-
 // XL9535K Register Addresses
 #define CONFIG_REG 0x06     // Configuration register (1 = input, 0 = output)
 #define OUTPUT_REG 0x02     // Output port register
@@ -17,22 +15,25 @@ void setup() {
   Wire.write(0xFF);  // Port 1 = inputs or unused
   Wire.endTransmission();
 
-  // Start with all relays OFF (HIGH = off, assuming active LOW relays)
-  setRelayState(0xFF);
-
+  // Start with all relays OFF (LOW = off, Active HIGH relays)
+  setRelayState(0x00);
   Serial.println("Relay board initialized");
 }
 
 void loop() {
   // Turn on each relay one by one
   for (int i = 0; i < 8; i++) {
-    byte relayState = ~(1 << i);  // Only one LOW at a time (active LOW)
+    byte relayState = (1 << i);  // Only one HIGH at a time (Active HIGH = ON)
     setRelayState(relayState);
+    Serial.println(relayState);
     delay(500);
   }
 
-  // Turn all relays OFF
+  // Turn all relays ON
   setRelayState(0xFF);
+  delay(1000);
+  // Turn all relays OFF
+  setRelayState(0x00);
   delay(1000);
 }
 
