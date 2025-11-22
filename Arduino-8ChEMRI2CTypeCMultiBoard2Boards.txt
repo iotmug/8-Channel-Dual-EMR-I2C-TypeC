@@ -1,0 +1,78 @@
+#include <Wire.h>
+
+// I2C addresses
+#define BOARD1_ADDR 0x20
+#define BOARD2_ADDR 0x21
+
+// XL9535K register addresses
+#define OUTPUT_PORT0  0x02
+#define OUTPUT_PORT1  0x03
+#define CONFIG_PORT0  0x06
+#define CONFIG_PORT1  0x07
+
+void setup() {
+  Serial.begin(115200);
+  Wire.begin();
+
+  configBoard(BOARD1_ADDR);
+  configBoard(BOARD2_ADDR);
+
+  // all off
+  writeOutputs(BOARD1_ADDR, 0x00, 0x00);
+  writeOutputs(BOARD2_ADDR, 0x00, 0x00);
+
+  delay(1000);
+}
+
+void loop() {
+
+  Serial.println("Opposite direction test...");
+
+  // loop from 0–7 on board1
+  for (int i = 0; i < 8; i++) {
+
+    // board1 goes normal direction
+    byte state1 = (1 << i);
+
+    // board2 goes reversed (7 → 0)
+    byte state2 = (1 << (7 - i));
+
+    writeOutputs(BOARD1_ADDR, state1, 0x00);
+    writeOutputs(BOARD2_ADDR, state2, 0x00);
+
+    Serial.print("Board1 Relay ");
+    Serial.print(i);
+    Serial.print(" ON   |   Board2 Relay ");
+    Serial.print(7 - i);
+    Serial.println(" ON");
+
+    delay(500);
+  }
+
+  // all ON
+  writeOutputs(BOARD1_ADDR, 0xFF, 0x00);
+  writeOutputs(BOARD2_ADDR, 0xFF, 0x00);
+  delay(1000);
+
+  // all OFF
+  writeOutputs(BOARD1_ADDR, 0x00, 0x00);
+  writeOutputs(BOARD2_ADDR, 0x00, 0x00);
+  delay(1000);
+}
+
+// ----------------------------------------------------------
+void configBoard(uint8_t addr) {
+  Wire.beginTransmission(addr);
+  Wire.write(CONFIG_PORT0);
+  Wire.write(0x00);  // P0 = outputs
+  Wire.write(0x00);  // P1 = outputs
+  Wire.endTransmission();
+}
+
+void writeOutputs(uint8_t addr, uint8_t p0, uint8_t p1) {
+  Wire.beginTransmission(addr);
+  Wire.write(OUTPUT_PORT0);
+  Wire.write(p0);
+  Wire.write(p1);
+  Wire.endTransmission();
+}
